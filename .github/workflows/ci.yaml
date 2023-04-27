@@ -1,0 +1,66 @@
+#
+# Copyright 2023 The dNation SSL Exporter authors. All Rights Reserved.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+name: Lint and Test Chart
+
+on:
+  pull_request:
+    # Only if there are chart changes to test.
+    paths:
+    - 'chart/**'
+
+jobs:
+  lint-chart:
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Fetch history
+      run: git fetch --prune --unshallow
+
+    - name: Set up chart-testing
+      uses: helm/chart-testing-action@v2.1.0
+
+    - name: Run chart-testing (install)
+      run: |
+        ct lint --config .github/ct.yaml
+  install-chart:
+    name: install-chart
+    runs-on: ubuntu-20.04
+    needs:
+    - lint-chart
+    strategy:
+      matrix:
+        k8s:
+        - v1.20.2
+        - v1.22.1
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Fetch history
+      run: git fetch --prune --unshallow
+
+    - name: Create kind ${{ matrix.k8s }} cluster
+      uses: helm/kind-action@v1.2.0
+      with:
+        node_image: kindest/node:${{ matrix.k8s }}
+
+    - name: Set up chart-testing
+      uses: helm/chart-testing-action@v2.1.0
+
+    - name: Run chart-testing (install)
+      run: |
+        ct install --config .github/ct.yaml
