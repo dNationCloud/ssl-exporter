@@ -29,43 +29,65 @@ spec:
     matchLabels:
       ssl-exporter/monitor-identifier: {{ .Release.Name | quote }}
   endpoints:
-    # Kubeconfig certificates
-    - interval: {{ .Values.serviceMonitor.scrapeInterval }}
+  {{- range .Values.serviceMonitor.externalTargets }}
+    - interval: {{ $.Values.serviceMonitor.scrapeInterval }}
       port: metrics
-      scrapeTimeout: {{ .Values.serviceMonitor.scrapeTimeout }}
+      scrapeTimeout: {{ $.Values.serviceMonitor.scrapeTimeout }}
+      path: /probe
+      params:
+        target:
+          - "{{ . }}"
+      relabelings:
+      - sourceLabels: [__param_target]
+        targetLabel: target
+      - targetLabel: job
+        replacement: ssl-external-url
+  {{- end }}
+    # Kubeconfig certificates
+    {{- range .Values.serviceMonitor.kubeconfigTargets }}
+    - interval: {{ $.Values.serviceMonitor.scrapeInterval }}
+      port: metrics
+      scrapeTimeout: {{ $.Values.serviceMonitor.scrapeTimeout }}
       path: /probe
       params:
         module:
         - kubeconfig
         target:
-        - /etc/kubernetes/admin.conf
+        - "{{ . }}"
       relabelings:
+      - sourceLabels: [__param_target]
+        targetLabel: target
       - targetLabel: job
         replacement: ssl-kubernetes-kubeconfig
+    {{- end }}
     # Kubernetes internal cerificates
-    - interval: {{ .Values.serviceMonitor.scrapeInterval }}
+    {{- range .Values.serviceMonitor.fileTargets }}
+    - interval: {{ $.Values.serviceMonitor.scrapeInterval }}
       port: metrics
-      scrapeTimeout: {{ .Values.serviceMonitor.scrapeTimeout }}
+      scrapeTimeout: {{ $.Values.serviceMonitor.scrapeTimeout }}
       path: /probe
       params:
         module:
         - file
         target:
-        - /etc/kubernetes/pki/**/*.crt
+        - "{{ . }}"
       relabelings:
       - targetLabel: job
         replacement: ssl-kubernetes-files
+    {{- end }}
     # Certificates from kubernetes secrets
-    - interval: {{ .Values.serviceMonitor.scrapeInterval }}
+    {{- range .Values.serviceMonitor.secretTargets }}
+    - interval: {{ $.Values.serviceMonitor.scrapeInterval }}
       port: metrics
-      scrapeTimeout: {{ .Values.serviceMonitor.scrapeTimeout }}
+      scrapeTimeout: {{ $.Values.serviceMonitor.scrapeTimeout }}
       path: /probe
       params:
         module:
           - kubernetes
         target:
-          - "*/*"
+          - "{{ . }}"
       relabelings:
       - targetLabel: job
         replacement: ssl-kubernetes-secrets
+    {{- end }}
 {{ end }}

@@ -18,12 +18,24 @@ serviceMonitor:
   # Automatically label with "release: {{ .Release.Name }}"
   # This label is used in dnation k8s monitoring stack
   releaseLabel: true
+  # Extra labels to be identified by Prometheus
   extraLabels: {}
   # Metrics scrape interval
   scrapeInterval: 15s
   # Metrics scrape timeout
   scrapeTimeout: 14s
-
+  # External URLs to scrape
+  externalTargets: []
+  # Kubeconfig files to scrape
+  kubeconfigTargets:
+  - /etc/kubernetes/admin.conf
+  # Internal Kubernetes certificate (glob syntax suppoted)
+  fileTargets:
+  - "/etc/kubernetes/pki/**/*.crt"
+  # Certificates within Kubernetes secrets in <namespace>/<secret> format (glob syntax suppoted)
+  secretTargets: []
+  # All secrets across all namespaces
+  # - "*/*"
 image:
   repository: ribbybibby/ssl-exporter
   pullPolicy: IfNotPresent

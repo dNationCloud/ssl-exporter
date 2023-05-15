@@ -49,28 +49,19 @@ serviceMonitor:
   scrapeInterval: 15s
   # Metrics scrape timeout
   scrapeTimeout: 14s
-```
-### Prometheus external targets
-- To monitor an external target, you must provide an additional scrape config to Prometheus:
-```yaml
-kube-prometheus-stack:
-  prometheus:
-    prometheusSpec:
-      additionalScrapeConfigs:
-      - job_name: 'ssl-external-urls'
-      metrics_path: /probe
-      static_configs:
-      ## External URLs to monitor certificates
-      - targets:
-        - example.com:443
-      relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-      ## Replace with the actual ssl-exporter service name
-      replacement: "<ssl-exporter-name>:9219"
+  # External URLs to scrape
+  externalTargets:
+  - example.com:443
+  # Kubeconfig files to scrape
+  kubeconfigTargets:
+  - /etc/kubernetes/admin.conf
+  # Internal Kubernetes certificate (glob syntax suppoted)
+  fileTargets:
+  - "/etc/kubernetes/pki/**/*.crt"
+  # Certificates within Kubernetes secrets in <namespace>/<secret> format (glob syntax suppoted)
+  secretTargets:
+  # All secrets across all namespaces
+  - "*/*"
 ```
 ## Usage
 - To see available metrics, port-forward to ssl-exporter service
