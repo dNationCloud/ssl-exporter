@@ -63,13 +63,13 @@ Create the name of the service account to use
 
 
 {{- define "ssl-exporter.roleName" -}}
-{{- if .Values.serviceAccount.create }}
+{{- if .Values.serviceAccount.createRole }}
 {{- default (include "ssl-exporter.fullname" .) .Values.serviceAccount.roleName }}
 {{- end }}
 {{- end -}}
 
 {{- define "ssl-exporter.roleBindingName" -}}
-{{- if .Values.serviceAccount.create }}
+{{- if .Values.serviceAccount.createRole }}
 {{- default (include "ssl-exporter.fullname" .) .Values.serviceAccount.roleBindingName }}
 {{- end }}
 {{- end -}}
@@ -89,4 +89,12 @@ release: {{ .Release.Name }}
 
 {{- define "ssl-exporter.serviceMonitorIdentifier" -}}
 {{- default .Release.Name .Values.serviceMonitor.identifier}}
+{{- end }}
+
+{{- define "ssl-exporter.nodeSelectorMaster" -}}
+{{- if .Values.nodeSelectorMaster }}
+{{- toYaml .Values.nodeSelectorMaster}}
+{{- else }}
+node-role.kubernetes.io/control-plane: ''
+{{- end }}
 {{- end }}

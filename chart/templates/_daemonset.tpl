@@ -77,15 +77,15 @@ spec:
               mountPath: "/etc/ssl-exporter"
             {{- if $masternode }}
             - name: host-kubeconfig
-              mountPath: /etc/kubernetes/admin.conf
+              mountPath: {{ $top.Values.kubeconfigMountPath }}
             {{- end }}
             - name: host-k8s-certs
-              mountPath: /etc/kubernetes/pki
+              mountPath: {{ $top.Values.certMountPath }}
           args:
             - --config.file=/etc/ssl-exporter/ssl_exporter.yaml
     {{- if $masternode }}
       nodeSelector:
-        node-role.kubernetes.io/control-plane: ''
+        {{ include "ssl-exporter.nodeSelectorMaster"  $top | nindent 8}}
       tolerations:
       - key: node-role.kubernetes.io/control-plane
         operator: Exists
@@ -94,7 +94,7 @@ spec:
         operator: Exists
         effect: NoSchedule
     {{- else }}
-      {{- with $top.Values.nodeSelector }}
+      {{- with $top.Values.nodeSelectorWorker }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
@@ -114,9 +114,9 @@ spec:
         {{- if $masternode }}
         - name: host-kubeconfig
           hostPath:
-            path: /etc/kubernetes/admin.conf
+            path: {{ $top.Values.kubeconfigMountPath }}
         {{- end }}
         - name: host-k8s-certs
           hostPath:
-            path: /etc/kubernetes/pki
+            path: {{ $top.Values.certMountPath }}
 {{- end }}

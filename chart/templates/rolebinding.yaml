@@ -13,7 +13,7 @@
 # limitations under the License.
 #
 ---
-{{ if .Values.serviceAccount.create }}
+{{ if .Values.serviceAccount.createRole }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
