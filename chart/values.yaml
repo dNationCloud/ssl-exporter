@@ -13,6 +13,10 @@
 # limitations under the License.
 #
 
+# Mount certificate hostpath
+certMountPath: /etc/kubernetes/pki
+kubeconfigMountPath: /etc/kubernetes/admin.conf
+
 serviceMonitor:
   enabled: false
   # Automatically label with "release: {{ .Release.Name }}"
@@ -50,6 +54,9 @@ configMapName: ""
 serviceAccount:
   # Specifies whether a service account should be created
   create: true
+  # Create role and rolebinding
+  # SSL exporter needs a role with "watch,get,list" on "secrets"
+  createRole: true
   # Annotations to add to the service account
   annotations: {}
   # The name of the service account to use.
@@ -60,7 +67,10 @@ serviceAccount:
 podAnnotations: {}
 podSecurityContext: {}
   # fsGroup: 2000
-
+# Default: node-role.kubernetes.io/control-plane: ''
+nodeSelectorMaster: {}
+nodeSelectorWorker: {}
+# Need to run as root to scan certificates on nodes
 securityContext:
   runAsUser: 0
   # capabilities:
@@ -100,7 +110,7 @@ resources: {}
   # requests:
   #   cpu: 100m
   #   memory: 128Mi
-nodeSelector: {}
+
 tolerations: {}
 
 affinity: {}
