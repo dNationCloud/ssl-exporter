@@ -55,6 +55,7 @@ spec:
       relabelings:
       - targetLabel: job
         replacement: ssl-kubernetes-files
+        action: replace
     {{- end }}
   {{- if $masternode }}
     # Kubeconfig certificates
@@ -71,8 +72,10 @@ spec:
       relabelings:
       - sourceLabels: [__param_target]
         targetLabel: target
+        action: replace
       - targetLabel: job
         replacement: ssl-kubernetes-kubeconfig
+        action: replace
 
     {{- end }}
   {{- else }}
@@ -88,6 +91,7 @@ spec:
       relabelings:
       - targetLabel: job
         replacement: ssl-external-url
+        action: replace
       metricRelabelings:
       - action: labeldrop
         regex: instance
@@ -108,6 +112,7 @@ spec:
       relabelings:
       - targetLabel: job
         replacement: ssl-kubernetes-secrets
+        action: replace
       metricRelabelings:
       - action: labeldrop
         regex: instance
