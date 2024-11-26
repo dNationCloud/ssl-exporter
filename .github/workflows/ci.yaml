@@ -43,6 +43,7 @@ jobs:
     - lint-chart
     strategy:
       matrix:
+        fail-fast: false
         k8s:
         - v1.20.2
         - v1.22.1
